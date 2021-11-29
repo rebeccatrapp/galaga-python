@@ -17,6 +17,7 @@ class Player(pg.sprite.Sprite):
         self.images.append(img)
         self.image = self.images[0]
         self.rect = self.image.get_rect()
+        self.lives = 3
 
 
     def draw(self, screen):

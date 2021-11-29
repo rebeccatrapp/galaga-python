@@ -3,6 +3,7 @@
 import pygame as pg
 import pygame.freetype
 import os
+import random
 from enemy import Enemy
 from player import Player
 from projectile import Projectile
@@ -19,7 +20,7 @@ def main():
     # Create a player
     player = Player()
     player.rect.x=0
-    player.rect.y=0
+    player.rect.y=100
     player_list = pg.sprite.Group()
 
     # Create enemy and projectile Groups
@@ -27,12 +28,18 @@ def main():
     enemyProjectiles = pg.sprite.Group()
 
     enemies = pg.sprite.Group()
+    enemylist = []
     for i in range(500, 1000, 75):
         for j in range(100, 600, 50):
             enemy = Enemy((i))
             enemy.rect.x=i
             enemy.rect.y=j
             enemies.add(enemy)
+            enemylist.append(enemy)
+    
+    bg = pg.image.load('assets\galaxy.png').convert()
+    bg = pg.transform.scale(bg, (1024, 780))
+    
 
     # Start sound - Load background music and start it
     # playing on a loop
@@ -62,6 +69,7 @@ def main():
     clock.tick(fps)
     # Setup score variable
     score = 0
+
     while running:
 
         # First thing we need to clear the events.
@@ -70,6 +78,8 @@ def main():
                 running = False
             if event.type == pg.USEREVENT + 1:
                 score += 100
+            if event.type == pg.USEREVENT + 2:
+                player.lives -= 1
 
         keys = pg.key.get_pressed()
 
@@ -84,7 +94,8 @@ def main():
                 shotDelta = 0
 
         if enemyShotDelta >= 1 :
-            enemyProjectile = EnemyProjectile(enemy.rect, player_list)
+            shooting = random.choice(enemylist)
+            enemyProjectile = EnemyProjectile(shooting.rect, player)
             enemyProjectiles.add(enemyProjectile)
             enemyShotDelta = 0
         
@@ -99,23 +110,24 @@ def main():
 
         # Objects are updated, now let's draw!
         screen.fill((0, 0, 0))
+        screen.blit(bg, (0, 0))
         player.draw(screen)
         enemies.draw(screen)
         projectiles.draw(screen)
         enemyProjectiles.draw(screen)
-        font.render_to(screen, (10, 10), "Score: " + str(score), FONTCOLOR, None, size=64)
+        font.render_to(screen, (10, 10), "Score: " + str(score) + " Lives: " + str(player.lives), FONTCOLOR, None, size=64)
 
         # When drawing is done, flip the buffer.
         pg.display.flip()
 
-        # How much time has passed this loop?
+        # How much time has passed this loop?s
         delta = clock.tick(fps) / 1000.0
         shotDelta += delta
         enemyShotDelta += delta
 
-        #game exits
-        if(score == 7000) :
-           pg.quit()   
+        #game exits 
+        if(score == 7000 or player.lives == 0) :
+           running = False  
 
 # Startup the main method to get things going.
 if __name__ == "__main__":
